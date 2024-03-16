@@ -1,9 +1,8 @@
-name: Website Deployment continue on test error
+name: Using resuable workflow
 on:
-  workflow_dispatch
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -36,7 +35,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
       - name: Test code
-        continue-on-error: true
         id: run-test
         run: npm run test
       - name: Upload Test Report
@@ -70,16 +68,17 @@ jobs:
           path: dist
   deploy:
     needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-files
-      - name: Output contents
-        run: ls
-      - name: Deploy
-        run: echo "Deploying..."
+    uses: ./.github/workflows/reusable.yml
+    # runs-on: ubuntu-latest
+    # steps:
+    #   - name: Get build artifacts
+    #     uses: actions/download-artifact@v3
+    #     with:
+    #       name: dist-files
+    #   - name: Output contents
+    #     run: ls
+    #   - name: Deploy
+    #     run: echo "Deploying..."
   report:
     needs: [lint, deploy]
     if: failure()
